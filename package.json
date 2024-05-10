@@ -7,27 +7,86 @@
     "#*": "./*"
   },
   "scripts": {
-    "build": "run-s build:*",
-    "build:icons": "tsx ./other/build-icons.ts",
-    "build:remix": "remix vite:build --sourcemapClient --sourcemapServer",
-    "build:server": "tsx ./other/build-server.ts",
+    "build": "nx exec -- true",
+    "build:icons": "nx exec -- tsx ./other/build-icons.ts",
+    "build:remix": "nx exec -- remix vite:build --sourcemapClient --sourcemapServer",
+    "build:server": "nx exec -- tsx ./other/build-server.ts",
     "predev": "npm run build:icons --silent",
     "dev": "node ./server/dev-server.js",
     "prisma:studio": "prisma studio",
     "format": "prettier --write .",
-    "lint": "eslint .",
+    "lint": "nx exec -- eslint .",
     "setup": "npm run build && prisma generate && prisma migrate deploy && prisma db seed && playwright install",
     "start": "cross-env NODE_ENV=production node .",
     "start:mocks": "cross-env NODE_ENV=production MOCKS=true tsx .",
-    "test": "vitest",
+    "test": "nx exec -- vitest --run",
+    "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "test:e2e": "npm run test:e2e:dev --silent",
     "test:e2e:dev": "playwright test --ui",
-    "pretest:e2e:run": "npm run build",
-    "test:e2e:run": "cross-env CI=true playwright test",
+    "test:e2e:run": "nx exec -- cross-env CI=true playwright test",
     "test:e2e:install": "npx playwright install --with-deps chromium",
-    "typecheck": "tsc",
-    "validate": "run-p \"test -- --run\" lint typecheck test:e2e:run"
+    "typecheck": "nx exec -- tsc",
+    "validate": "nx exec -- true"
+  },
+  "nx": {
+    "targets": {
+      "build": {
+        "dependsOn": [
+          "build:remix",
+          "build:server"
+        ],
+        "cache": true
+      },
+      "build:icons": {
+        "outputs": [
+          "{projectRoot}/app/components/ui/icons"
+        ],
+        "cache": true
+      },
+      "build:remix": {
+        "dependsOn": [
+          "build:icons"
+        ],
+        "outputs": [
+          "{projectRoot}/build"
+        ],
+        "cache": true
+      },
+      "build:server": {
+        "outputs": [
+          "{projectRoot}/server-build"
+        ],
+        "cache": true
+      },
+      "test": {
+        "cache": true
+      },
+      "test:e2e:run": {
+        "dependsOn": [
+          "build"
+        ],
+        "outputs": [
+          "{projectRoot}/playwright-report"
+        ],
+        "cache": true
+      },
+      "lint": {
+        "cache": true
+      },
+      "typecheck": {
+        "cache": true
+      },
+      "validate": {
+        "dependsOn": [
+          "test",
+          "test:e2e:run",
+          "lint",
+          "typecheck"
+        ],
+        "cache": true
+      }
+    }
   },
   "eslintIgnore": [
     "/node_modules",
@@ -150,7 +209,8 @@
     "tsx": "^4.7.1",
     "typescript": "^5.4.2",
     "vite": "^5.1.6",
-    "vitest": "^1.4.0"
+    "vitest": "^1.4.0",
+    "nx": "19.0.2"
   },
   "engines": {
     "node": "20"
@@ -160,3 +220,4 @@
     "seed": "tsx prisma/seed.ts"
   }
 }
+
