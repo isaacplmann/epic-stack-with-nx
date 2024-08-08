@@ -25,3 +25,4 @@ node_modules
 /app/components/ui/icons
 
 .nx/cache
+.nx/workspace-data

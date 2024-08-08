@@ -13,3 +13,5 @@ node_modules
 /prisma/migrations
 
 package-lock.json
+
+/.nx/workspace-data
